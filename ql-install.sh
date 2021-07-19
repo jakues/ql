@@ -16,7 +16,7 @@ export aCOLOUR=(
 		'\e[1;33m'	# Yellow
 		'\e[1m'		# Bold white
 		'\e[1;32m'	# Green
-		'\e[1;31m'  	# Red
+		'\e[1;31m'  # Red
 	)
 export GREEN_LINE="${aCOLOUR[0]}──────────────────────────────────────────────────────────${COLOUR_RESET}"
 export GREEN_BULLET="  [i] "
@@ -144,8 +144,7 @@ x86() {
 	export APT=$(which apt-get)
 
 	if [[ ! -z $RPM ]]; then
-    	# Drop support for .rpm
-		error "Failed to install ! Check your OS"
+    	rpm
 	elif [[ ! -z $APT ]]; then
     	deb
 	else
