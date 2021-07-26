@@ -98,6 +98,7 @@ update() {
 	export RPM=$(which yum)
 	export APT=$(which apt-get)
 	export dir_QR="/opt/.qlauncher-qr"
+	export dir_qlcmd="/opt/.ql-cmd.sh"
 	export repo_qlcmd="https://github.com/jakues/ql/raw/master/ql-cmd.sh"
 		if [[ ! -z $RPM ]]; then
 			yum update -y ; yum upgrade -y ; yum install epel-release wget net-tools qrencode ruby nmap dmidecode unzip -y || error "Update failed !"
@@ -106,8 +107,8 @@ update() {
 		else
     		error "Check your OS !"
 		fi
-	wget -q ${repo_qlcmd} -O /opt/.ql-cmd.sh
-	chmod +x ${repo_qlcmd}
+	wget -q ${repo_qlcmd} -O ${dir_qlcmd}
+	chmod +x ${dir_qlcmd}
 	${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
 	ln -s /usr/games/lolcat /usr/bin/lolcat || error "Failed linking lolcat !"
 	${ECMD} "alias Q='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
