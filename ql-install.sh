@@ -111,7 +111,7 @@ check_arch_rpi() {
 	if [ "${MODELO}" != "armv7l" ]; then
 		error "This script is only intended to run on ARM (armv7l) devices."
 	elif [[ "${MODELO}" == *"aarch64"* ]] ; then
-		${ECMD} "${RED_WARN}${aCOLOUR[3]}Currently Qlauncher doesn't support arm64.${COLOUR_RESET}"
+		error "Currently Qlauncher doesn't support arm64 !"
 	fi
 	}
 
@@ -126,16 +126,17 @@ reboot_rpi() {
 	}
 
 rpm() {
-	tools_rpm \
-		; lolcat \
-		; req \
+	tools_rpm
+	lolcat
+	req
+	source .bashrc
 	reload
 	}
 
 deb() {
-	tools_deb \
-		; req \
-		; source .bashrc \
+	tools_deb
+	req
+	source .bashrc
 	reload
 	}
 
@@ -143,9 +144,9 @@ x86() {
 	export RPM=$(which yum)
 	export APT=$(which apt-get)
 
-	if [[ ! -z $RPM ]]; then
+	if [[ ! -z $RPM ]] ; then
     	rpm
-	elif [[ ! -z $APT ]]; then
+	elif [[ ! -z $APT ] ] ; then
     	deb
 	else
 		error "Failed to install ! Check your OS"
@@ -153,11 +154,11 @@ x86() {
 	}
 
 rpi() {
-	check_arch_rpi \
-		; tools_deb \
-		; req \
-		; reload \
-		; cgroupfs \
+	check_arch_rpi
+	tools_deb
+	req
+	reload
+	cgroupfs
 	reboot_rpi
 	}
 

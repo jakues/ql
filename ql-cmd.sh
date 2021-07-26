@@ -13,7 +13,7 @@ export aCOLOUR=(
 		'\e[1;33m'	# Yellow
 		'\e[1m'		# White
 		'\e[1;32m'	# Green
-		'\e[1;31m'  	# Red
+		'\e[1;31m'  # Red
 	)
 export GREEN_BULLET="  [i] "
 export GREEN_WARN="  [${aCOLOUR[2]}✓${COLOUR_RESET}] "
@@ -33,7 +33,10 @@ fi
 
 start() {
 	if [[ ! $(ql_RUNNING) ]] ; then
-		systemctl start qlauncher
+		${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Qlauncher isn't running${COLOUR_RESET}"
+		systemctl start qlauncher || error "Failed to start qlauncher !"
+		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Qlauncher is now running.${COLOUR_RESET}"
+		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Please wait until the container alive${COLOUR_RESET}"
 	else
 		error "Failed to start ! Qlauncher already running"
 	fi
@@ -41,7 +44,9 @@ start() {
 
 stop() {
 	if [[ $(ql_RUNNING) ]] ; then
-		systemctl stop qlauncher
+		${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Qlauncher is running${COLOUR_RESET}"
+		systemctl stop qlauncher || error "Failed to stop qlauncher !"
+		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Qlauncher is now stopped.${COLOUR_RESET}"
 	else
 		error "Failed to stop ! Qlauncher already stopped"
 	fi
@@ -49,7 +54,8 @@ stop() {
 
 restart () {
 	if [[ $(ql_RUNNING) ]] ; then
-		restart
+		systemctl restart qlauncher || error "Failed to restart qlauncher"
+		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Restart qlauncher done.${COLOUR_RESET}"
 	elif [[ ! $(ql_RUNNING) ]] ; then
 		start
 	fi
