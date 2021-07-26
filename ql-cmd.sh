@@ -110,7 +110,6 @@ update() {
 	wget -q ${repo_qlcmd} -O ${dir_qlcmd}
 	chmod +x ${dir_qlcmd}
 	${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
-	ln -s /usr/games/lolcat /usr/bin/lolcat || error "Failed linking lolcat !"
 	${ECMD} "alias Q='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
 }
 
