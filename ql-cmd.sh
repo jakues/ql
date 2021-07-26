@@ -97,6 +97,8 @@ port() {
 update() {
 	export RPM=$(which yum)
 	export APT=$(which apt-get)
+	export dir_QR="/opt/.qlauncher-qr"
+	export repo_qlcmd="https://github.com/jakues/ql/raw/master/ql-cmd.sh"
 		if [[ ! -z $RPM ]]; then
 			yum update -y ; yum upgrade -y ; yum install epel-release wget net-tools qrencode ruby nmap dmidecode unzip -y || error "Update failed !"
 		elif [[ ! -z $APT ]]; then
