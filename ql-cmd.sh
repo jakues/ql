@@ -19,7 +19,7 @@ export GREEN_BULLET="  [i] "
 export GREEN_WARN="  [${aCOLOUR[2]}✓${COLOUR_RESET}] "
 export RED_WARN="  [${aCOLOUR[3]}✗${COLOUR_RESET}] "
 export ql="/opt/qlauncherV2/qlauncher.sh"
-export ql_RUNNING="ql check | grep '"edgecore_alive":"true"'"
+export ql_RUNNING="${ql} check | grep '"edgecore_alive":"true"'"
 
 error() {
 	${ECMD} "${RED_WARN}${aCOLOUR[3]}$1 ${COLOUR_RESET}"
@@ -111,6 +111,8 @@ update() {
 	chmod +x ${dir_qlcmd}
 	${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
 	${ECMD} "alias Q='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
+	${ECMD} "alias ql='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
+	source .bashrc
 }
 
 hostname() {
