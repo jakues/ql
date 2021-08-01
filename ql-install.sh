@@ -20,7 +20,7 @@ export MODELO=$(uname -m)
 error() {
 	${ECMD} "${RED_WARN}${aCOLOUR[3]}$1 ${COLOUR_RESET}"
 	exit 1
-}
+	}
 
 tools_deb() {
 	${ECMD} "${GREEN_LINE}"
@@ -54,12 +54,6 @@ req() {
 		${ECMD} "alias qq='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
 		${ECMD} "ql --reinstall" >> /etc/rc.local
 	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing requirements Done${COLOUR_RESET}"
-	}
-
-reload() {
-	#systemctl enable qlauncher || error "Failed enabled qlauncher on boot !"
-	#systemctl start qlauncher || error "Failed start qlauncher !"
-	#systemctl daemon-reload || error "Failed restart daemon !"
 	}
 
 lolcat() {
