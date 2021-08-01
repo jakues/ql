@@ -1,12 +1,5 @@
 #!/bin/sh
 
-#################################################
-# Description	: Qlauncher commands ez         #
-# Author		: Rill (jakueenak@gmail.com)    #
-# Telegram		: t.me/pethot                   #
-# Version		: beta                          #
-#################################################
-
 export ECMD="echo -e"
 export COLOUR_RESET='\e[0m'
 export aCOLOUR=(
@@ -20,6 +13,7 @@ export GREEN_WARN="  [${aCOLOUR[2]}✓${COLOUR_RESET}] "
 export RED_WARN="  [${aCOLOUR[3]}✗${COLOUR_RESET}] "
 export ql="/opt/qlauncherV2/qlauncher.sh"
 export ql_RUNNING="${ql} check | grep '"edgecore_alive":"true"'"
+export repo_QL="https://get.qlauncher.poseidon.network/install.sh"
 
 error() {
 	${ECMD} "${RED_WARN}${aCOLOUR[3]}$1 ${COLOUR_RESET}"
@@ -32,31 +26,33 @@ if [[ $(id -u) -ne 0 ]] ; then
 fi
 
 start() {
-	if [[ ! $(ql_RUNNING) ]] ; then
+	if [[ ! ${ql_RUNNING} ]] ; then
 		${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Qlauncher isn't running${COLOUR_RESET}"
 		systemctl start qlauncher || error "Failed to start qlauncher !"
 		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Qlauncher is now running.${COLOUR_RESET}"
 		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Please wait until the container alive${COLOUR_RESET}"
 	else
-		error "Failed to start ! Qlauncher already running"
+		error "Qlauncher already running"
+		error "Failed to start !"
 	fi
 	}
 
 stop() {
-	if [[ $(ql_RUNNING) ]] ; then
+	if [[ ${ql_RUNNING} ]] ; then
 		${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Qlauncher is running${COLOUR_RESET}"
 		systemctl stop qlauncher || error "Failed to stop qlauncher !"
 		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Qlauncher is now stopped.${COLOUR_RESET}"
 	else
-		error "Failed to stop ! Qlauncher already stopped"
+		error "Failed to stop qlauncher !"
 	fi
 	}
 
 restart () {
-	if [[ $(ql_RUNNING) ]] ; then
+	if [[ ${ql_RUNNING} ]] ; then
+		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Restarting qlauncher ...${COLOUR_RESET}"
 		systemctl restart qlauncher || error "Failed to restart qlauncher"
-		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Restart qlauncher done.${COLOUR_RESET}"
-	elif [[ ! $(ql_RUNNING) ]] ; then
+		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Restarting qlauncher done !${COLOUR_RESET}"
+	elif [[ ! ${ql_RUNNING} ]] ; then
 		start
 	fi
 }
@@ -85,12 +81,50 @@ bind() {
 	${ECMD}
 }
 
+inst() {
+	if [ -d /opt/qlauncherV2 ]; then
+		error "Qlauncher already installed !"
+	else
+		${ECMD} "Qlauncher not installed !"
+		${ECMD} "Installing ..."
+		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
+		${ECMD} "Installing qlauncher done !"
+	fi
+}
+
+unst() {
+	if [ -d /opt/qlauncherV2 ]; then
+		${ECMD} "Uninstalling qlauncher ..."
+		${ql} stop || error "Failed to stop qlauncher !"
+		${ql} uninstall || error "Failed to uninstall qlauncher !"
+		${ECMD} "Uninstalling qlauncher done !"
+	else
+		error "Qlauncher not installed !"
+	fi
+}
+
+reinst() {
+	if [ -d /opt/qlauncherV2 ]; then
+		${ECMD} "Reinstalling qlauncher ..."
+		${ql} stop || error "Failed to stop qlauncher !"
+		${ql} uninstall || error "Failed to uninstall qlauncher !"
+		${ql} install || error "Failed to install qlauncher !"
+		${ECMD} "Reinstall qlauncher done !"
+	else
+		${ECMD} "Qlauncher not installed !"
+		${ECMD} "Installing ..."
+		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
+		${ECMD} "Installing qlauncher done !"
+	fi
+}
+
 port() {
 	export MYIP=$(wget -t 3 -T 15 -qO- http://ipv4.icanhazip.com)
 	if [[ $(which nmap) == *"nmap"* ]] ; then
 		nmap -p 32440-32449 $MYIP | lolcat
 	else
-		error "Please nmap first !"
+		error "Nmap not found !"
+		error "Please install nmap !"
 	fi
 	}
 
@@ -110,8 +144,8 @@ update() {
 	wget -q ${repo_qlcmd} -O ${dir_qlcmd}
 	chmod +x ${dir_qlcmd}
 	${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
-	${ECMD} "alias Q='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
-	${ECMD} "alias ql='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
+	${ECMD} "alias ql='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
+	${ECMD} "alias qq='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
 	source .bashrc
 }
 
@@ -125,7 +159,7 @@ hostname() {
 	sudo sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hostname
 	read -p "		[i] Reboot now to change hostname ? [y/N]" -n 1 -r
 		if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-			error "Please reboot manually"
+			error "Please reboot manually !"
 		else
 			${ECMD} "${COLOUR_RESET}"
 			reboot
@@ -139,7 +173,7 @@ change_hwsn() {
 		read -r -p "		[i] Enter new hwsn : " SN
 			${ECMD} ${SN} > /etc/qlauncher
 			${ECMD} ${SN} > /etc/machine-id
-	restart
+			restart
 	}
 
 help() {
@@ -151,12 +185,14 @@ help() {
 	${ECMD} "    -i, --check		check Qlauncher tick"
 	${ECMD} "    -l, --stat		show status container"
 	${ECMD} "    -b, --bind		get Qlauncher QR Code"
+	${ECMD} "    --install		install qlauncher"
+	${ECMD} "    --uninstall	uninstall qlauncher"
+	${ECMD} "    --reinstall	reinstall qlauncher"
 	${ECMD} "\n  Miscellaneous :"
 	${ECMD} "    -P			check port status using nmap"
 	${ECMD} "    --update		update script"
 	${ECMD} "    --hostname		change hostname"
-	#${ECMD} "    -w, --about		about this script\n"
-	${ECMD} "  Report this script to: <https://github.com/jakues/one-hit/issues>"
+	${ECMD} "\n  Report this script to: <https://github.com/jakues/one-hit/issues>"
 	${ECMD} "  Report Qlauncher bugs to: <https://github.com/poseidon-network/qlauncher-linux/issues>"
 	${ECMD} "  Qlauncher github: <https://github.com/poseidon-network/qlauncher-linux>"
 	${ECMD} "  Poseidon Network home page: <https://poseidon.network/>\n"
@@ -186,6 +222,15 @@ case "$1" in
 ;;
 	-b|--bind)
 		bind
+;;
+	--install)
+		inst
+;;
+	--uninstall)
+		unst
+;;
+	--reinstall)
+		reinst
 ;;
 	-P)
 		port

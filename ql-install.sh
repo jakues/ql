@@ -1,15 +1,5 @@
 #!/bin/bash
 
-#################################################
-# Description	: Script to install Qlauncher   #
-# Author		: Rill (jakueenak@gmail.com)    #
-# Telegram		: t.me/pethot                   #
-# Version		: beta                          #
-#################################################
-
-
-
-# Set var
 export ECMD="echo -e"
 export COLOUR_RESET='\e[0m'
 export aCOLOUR=(
@@ -54,14 +44,17 @@ tools_rpm() {
 
 req() {
     ${ECMD} "${GREEN_LINE}"
-    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing Qlauncher ..."
+    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing requirements ..."
     ${ECMD} "${GREEN_LINE}"
-        curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
+        #curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
 		${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
 		ln -s /usr/games/lolcat /usr/bin/lolcat || error "Failed linking lolcat !"
 		wget -q ${repo_qlcmd} -O /opt/.ql-cmd.sh
-		${ECMD} "alias Q='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing Qlauncher Done"
+		${ECMD} "alias ql='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
+		${ECMD} "alias qq='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
+		${ECMD} "ql --reinstall" >> /etc/rc.local
+	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing requirements Done"
+	}
 
 reload() {
 	systemctl enable qlauncher || error "Failed enabled qlauncher on boot !"
@@ -140,19 +133,6 @@ deb() {
 	reload
 	}
 
-x86() {
-	export RPM=$(which yum)
-	export APT=$(which apt-get)
-
-	if [[ ! -z $RPM ]] ; then
-    	rpm
-	elif [[ ! -z $APT ] ] ; then
-    	deb
-	else
-		error "Failed to install ! Check your OS"
- 	fi
-	}
-
 rpi() {
 	check_arch_rpi
 	tools_deb
@@ -160,6 +140,16 @@ rpi() {
 	reload
 	cgroupfs
 	reboot_rpi
+	}
+
+x86() {
+	if [[ ! -z $(which yum) ]] ; then
+    	rpm
+	elif [[ ! -z $(which apt-get) ] ] ; then
+    	deb
+	else
+		error "Failed to install ! Check your OS"
+ 	fi
 	}
 
 # Need run as root user
