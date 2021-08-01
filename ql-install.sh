@@ -145,7 +145,7 @@ rpi() {
 x86() {
 	if [[ ! -z $(which yum) ]] ; then
     	rpm
-	elif [[ ! -z $(which apt-get) ] ] ; then
+	elif [[ ! -z $(which apt-get) ]] ; then
     	deb
 	else
 		error "Failed to install ! Check your OS"
