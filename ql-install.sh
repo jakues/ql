@@ -14,7 +14,7 @@ export GREEN_WARN="  [${aCOLOUR[2]}✓${COLOUR_RESET}] "
 export RED_WARN="  [${aCOLOUR[3]}✗${COLOUR_RESET}] "
 export dir_QR="/opt/.qlauncher-qr"
 export repo_QL="https://get.qlauncher.poseidon.network/install.sh"
-export repo_qlcmd="https://github.com/jakues/ql/ql-cmd.sh"
+export repo_qlcmd="https://github.com/jakues/ql/raw/master/ql-cmd.sh"
 export MODELO=$(uname -m)
 
 error() {
@@ -24,27 +24,27 @@ error() {
 
 tools_deb() {
 	${ECMD} "${GREEN_LINE}"
-	${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Updating Package ..."
+	${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Updating Package ...${COLOUR_RESET}"
 	${ECMD} "${GREEN_LINE}"
 		apt-get update -qq -y || error "Update failed !"
 		apt-get upgrade -qq -y || error "Upgrade failed !"
 		apt-get install wget net-tools qrencode nmap dmidecode lolcat -qq -y || error "Install the requirements package failed !"
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Updating Package Done"
+	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Updating Package Done${COLOUR_RESET}"
 	}
 
 tools_rpm() {
 	${ECMD} "${GREEN_LINE}"
-	${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Updating Package ..."
+	${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Updating Package ...${COLOUR_RESET}"
     ${ECMD} "${GREEN_LINE}"
 		yum update -y || error "Update failed !"
 		yum upgrade -y || error "Upgrade failed !"
 		yum install epel-release wget net-tools qrencode ruby nmap dmidecode unzip -y || error "Install the requirements package failed !"
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Updating Package Done"
+	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Updating Package Done${COLOUR_RESET}"
 	}
 
 req() {
     ${ECMD} "${GREEN_LINE}"
-    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing requirements ..."
+    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing requirements ...${COLOUR_RESET}"
     ${ECMD} "${GREEN_LINE}"
         #curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
 		${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
@@ -53,13 +53,13 @@ req() {
 		${ECMD} "alias ql='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
 		${ECMD} "alias qq='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
 		${ECMD} "ql --reinstall" >> /etc/rc.local
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing requirements Done"
+	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing requirements Done${COLOUR_RESET}"
 	}
 
 reload() {
-	systemctl enable qlauncher || error "Failed enabled qlauncher on boot !"
-	systemctl start qlauncher || error "Failed start qlauncher !"
-	systemctl daemon-reload || error "Failed restart daemon !"
+	#systemctl enable qlauncher || error "Failed enabled qlauncher on boot !"
+	#systemctl start qlauncher || error "Failed start qlauncher !"
+	#systemctl daemon-reload || error "Failed restart daemon !"
 	}
 
 lolcat() {
@@ -68,14 +68,14 @@ lolcat() {
 	export dir_GEM="${HOME}/lolcat-master/bin"
 
 	${ECMD} "${GREEN_LINE}"
-    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing Lolcat ..."
+    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing Lolcat ...${COLOUR_RESET}"
     ${ECMD} "${GREEN_LINE}"
 		wget -q ${repo_LOL} -O ${dir_LOL} || error "Check internet connections and try again !"
 		unzip -q ${dir_LOL} || error "Failed extract with unzip !"
 		gem install --bindir ${dir_GEM} lolcat || error "Failed install lolcat with ruby !"
 		ln -s /usr/games/lolcat /usr/bin/lolcat || error "Failed linking lolcat !"
 		rm -rf ${dir_LOL} lolcat-master || error "Remove failed !"
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing Lolcat Done"
+	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing Lolcat Done${COLOUR_RESET}"
 	}
 
 cgroupfs() {
@@ -123,21 +123,18 @@ rpm() {
 	lolcat
 	req
 	source .bashrc
-	reload
 	}
 
 deb() {
 	tools_deb
 	req
 	source .bashrc
-	reload
 	}
 
 rpi() {
 	check_arch_rpi
 	tools_deb
 	req
-	reload
 	cgroupfs
 	reboot_rpi
 	}
