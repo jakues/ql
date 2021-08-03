@@ -75,6 +75,22 @@ tools_rpm() {
 	${PRIN} " %b\\n" "${TICK}"
 }
 
+ql_inst() {
+    ${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
+    if [ ! -d /opt/qlauncherV2 ] ; then
+        ${SLP}
+        ${PRIN} "%b\\n" "${CROSS}"
+        ${PRIN} " %b %s ... \n" "${INFO}" "Installing qlauncher"
+        curl -sfL ${repo_QL} | sh - || error "Failed to install !"
+        ${PRIN} " %b %s " "${INFO}" "Install qlauncher"
+        ${PRIN} "%b" "${DONE}"
+        ${SLP}
+        ${PRIN} " %b\\n" "${TICK}"
+    fi
+    ${SLP}
+    ${PRIN} "%b\\n" "${TICK}"
+}
+
 req() {
     ${PRIN} " %b %s ... " "${INFO}" "Installing Requirements"
 		${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
@@ -123,11 +139,13 @@ pkg() {
             ${SLP}
 	        ${PRIN} "%b\\n" "${TICK}"
             tools_rpm
+            ql_inst
             req
         elif [[ ! -z $(which apt-get) ]] ; then
             ${SLP}
 	        ${PRIN} "%b\\n" "${TICK}"
             tools_deb
+            ql_inst
             req
         else
             ${SLP}
@@ -152,20 +170,16 @@ fi
 ${SLP}
 ${PRIN} "%b\\n" "${TICK}"
 
-# Detect qlauncher installed
-${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
-if [ ! -d /opt/qlauncherV2 ] ; then
-	${SLP}
-	${PRIN} "%b\\n" "${CROSS}"
-    ${PRIN} " %b %s ... \n" "${INFO}" "Installing qlauncher"
-    curl -sfL ${repo_QL} | sh - || error "Failed to install !"
-    ${PRIN} " %b %s " "${INFO}" "Install qlauncher"
-    ${PRIN} "%b" "${DONE}"
+# Detect inet connections
+${PRIN} " %b %s ... " "${INFO}" "Detect connections"
+if [[ ! $(ping -q -c 1 -W 1 8.8.8.8) ]] ; then 
     ${SLP}
-	${PRIN} " %b\\n" "${TICK}"
+    ${PRIN} "%b\\n" "${TICK}"
+else 
+    ${SLP}
+	${PRIN} "%b\\n" "${CROSS}"
+    error "No internet connections !"
 fi
-${SLP}
-${PRIN} "%b\\n" "${TICK}"
 
 # Detect architecture and kick off
 ${PRIN} " %b %s ... " "${INFO}" "Detect architecture"
