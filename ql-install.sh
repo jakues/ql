@@ -154,10 +154,15 @@ ${PRIN} "%b\\n" "${TICK}"
 
 # Detect qlauncher installed
 ${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
-if [ -z /opt/qlauncherV2 ] ; then
+if [ ! -d /opt/qlauncherV2 ] ; then
 	${SLP}
 	${PRIN} "%b\\n" "${CROSS}"
-	curl -sfL ${repo_QL} | sh - || error "Failed to install !"
+    ${PRIN} " %b %s ... \n" "${INFO}" "Installing qlauncher"
+    curl -sfL ${repo_QL} | sh - || error "Failed to install !"
+    ${PRIN} " %b %s " "${INFO}" "Install qlauncher"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
 fi
 ${SLP}
 ${PRIN} "%b\\n" "${TICK}"
