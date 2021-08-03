@@ -1,158 +1,188 @@
 #!/bin/bash
 
+export PRIN="printf"
 export ECMD="echo -e"
-export COLOUR_RESET='\e[0m'
-export aCOLOUR=(
-		'\e[1;33m'	# Yellow
-		'\e[1m'		# Bold white
-		'\e[1;32m'	# Green
-		'\e[1;31m'  # Red
-	)
-export GREEN_LINE="${aCOLOUR[0]}──────────────────────────────────────────────────────────${COLOUR_RESET}"
-export GREEN_BULLET="  [i] "
-export GREEN_WARN="  [${aCOLOUR[2]}✓${COLOUR_RESET}] "
-export RED_WARN="  [${aCOLOUR[3]}✗${COLOUR_RESET}] "
+export CR='\e[0m'
+export COL_LIGHT_GREEN='\e[1;32m'
+export COL_LIGHT_RED='\e[1;31m'
+export TICK="[${COL_LIGHT_GREEN}✓${CR}]"
+export CROSS="[${COL_LIGHT_RED}✗${CR}]"
+export INFO="[i]"
+export DONE="${COL_LIGHT_GREEN} done !${CR}"
+export SLP="sleep 0.69s"
 export dir_QR="/opt/.qlauncher-qr"
+export dir_ql="/usr/bin/ql"
 export repo_QL="https://get.qlauncher.poseidon.network/install.sh"
 export repo_qlcmd="https://github.com/jakues/ql/raw/master/ql-cmd.sh"
 export MODELO=$(uname -m)
 
 error() {
-	${ECMD} "${RED_WARN}${aCOLOUR[3]}$1 ${COLOUR_RESET}"
-	exit 1
-	}
+    ${PRIN} "$1 ${CROSS}"
+    exit
+}
 
 tools_deb() {
-	${ECMD} "${GREEN_LINE}"
-	${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Updating Package ...${COLOUR_RESET}"
-	${ECMD} "${GREEN_LINE}"
-		apt-get update -qq -y || error "Update failed !"
-		apt-get upgrade -qq -y || error "Upgrade failed !"
-		apt-get install wget net-tools qrencode nmap dmidecode lolcat -qq -y || error "Install the requirements package failed !"
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Updating Package Done${COLOUR_RESET}"
-	}
+    ${PRIN} " %b %s " "${INFO}" "Package Manager : apt-get"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    # Update
+    ${PRIN} " %b %s ... \n" "${INFO}" "Updating repo"
+    	apt-get update -qq -y || error "Update failed !"
+    ${PRIN} " %b %s " "${INFO}" "Update repo"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+    # Upgrade
+    ${PRIN} " %b %s ... \n" "${INFO}" "Upgrading packages"
+    	apt-get upgrade -qq -y || error "Upgrade failed !"
+    ${PRIN} " %b %s " "${INFO}" "Upgrade packages"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+    # Install
+    ${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
+    	apt-get install wget net-tools qrencode nmap dmidecode lolcat -qq -y || error "Install the requirements package failed !"
+    ${PRIN} " %b %s " "${INFO}" "Install packages"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+}
 
 tools_rpm() {
-	${ECMD} "${GREEN_LINE}"
-	${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Updating Package ...${COLOUR_RESET}"
-    ${ECMD} "${GREEN_LINE}"
-		yum update -y || error "Update failed !"
-		yum upgrade -y || error "Upgrade failed !"
-		yum install epel-release wget net-tools qrencode ruby nmap dmidecode unzip -y || error "Install the requirements package failed !"
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Updating Package Done${COLOUR_RESET}"
-	}
+    ${PRIN} " %b %s " "${INFO}" "Package Manager : yum"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    # Update
+    ${PRIN} " %b %s ... \n" "${INFO}" "Updating repo"
+    	yum update -y || error "Update failed !"
+    ${PRIN} " %b %s " "${INFO}" "Update repo"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+    # Upgrade
+    ${PRIN} " %b %s ... \n" "${INFO}" "Upgrading packages"
+    	yum upgrade -y || error "Upgrade failed !"
+    ${PRIN} " %b %s " "${INFO}" "Upgrade packages"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+    # Install
+    ${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
+        yum install epel-release wget net-tools qrencode ruby nmap dmidecode lolcat -y || error "Install the requirements package failed !"
+    ${PRIN} " %b %s " "${INFO}" "Install packages"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+}
 
 req() {
-    ${ECMD} "${GREEN_LINE}"
-    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing requirements ...${COLOUR_RESET}"
-    ${ECMD} "${GREEN_LINE}"
-        #curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
+    ${PRIN} " %b %s ... " "${INFO}" "Installing Requirements"
 		${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
-		ln -s /usr/games/lolcat /usr/bin/lolcat || error "Failed linking lolcat !"
-		wget -q ${repo_qlcmd} -O /opt/.ql-cmd.sh
-		${ECMD} "alias ql='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
-		${ECMD} "alias qq='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
-		${ECMD} "ql --reinstall" >> /etc/rc.local
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing requirements Done${COLOUR_RESET}"
-	}
-
-lolcat() {
-	export repo_LOL="https://github.com/busyloop/lolcat/archive/master.zip"
-	export dir_LOL="${HOME}/lolcat.zip"
-	export dir_GEM="${HOME}/lolcat-master/bin"
-
-	${ECMD} "${GREEN_LINE}"
-    ${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Installing Lolcat ...${COLOUR_RESET}"
-    ${ECMD} "${GREEN_LINE}"
-		wget -q ${repo_LOL} -O ${dir_LOL} || error "Check internet connections and try again !"
-		unzip -q ${dir_LOL} || error "Failed extract with unzip !"
-		gem install --bindir ${dir_GEM} lolcat || error "Failed install lolcat with ruby !"
-		ln -s /usr/games/lolcat /usr/bin/lolcat || error "Failed linking lolcat !"
-		rm -rf ${dir_LOL} lolcat-master || error "Remove failed !"
-	${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Installing Lolcat Done${COLOUR_RESET}"
-	}
+		wget -q ${repo_qlcmd} -O ${dir_ql} || error "Failed download ql-cmd.sh !"
+        chmod +x ${dir_ql} || error "Failed change permission"
+	${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+}
 
 cgroupfs() {
 	export CMDLINE_RASPBIAN="/boot/cmdline.txt"
 	export CMDLINE_UBUNTU="/boot/firmware/cmdline.txt"
 	export cgroup_cmd=$(sed -i -e 's/rootwait/cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 rootwait/')
-
-	if $(cat /etc/os-release | grep debian | cut -b 69-) ; then
-		if $(cat ${CMDLINE_RASPBIAN} | grep 'cgroup' >/dev/null) ; then
-			error "Cgroup already enabled!"
-		else
-			${cgroup_cmd} $CMDLINE_RASPBIAN || error "Failed modify cgroup !"
-        fi
-	elif $(cat /etc/os-release | grep ubuntu | cut -b 69-) ; then
-        if $(cat ${CMDLINE_UBUNTU} | grep 'cgroup' >/dev/null) ; then
-			error "Cgroup already enabled !"
+    ${PRIN} " %b %s ... " "${INFO}" "Set cgroupfs"
+        if $(cat /etc/os-release | grep debian | cut -b 69-) ; then
+            if $(cat ${CMDLINE_RASPBIAN} | grep 'cgroup' > /dev/null) ; then
+                error "Cgroup already enabled!"
+            else
+                ${cgroup_cmd} $CMDLINE_RASPBIAN || error "Failed modify cgroup !"
+            fi
+        elif $(cat /etc/os-release | grep ubuntu | cut -b 69-) ; then
+            if $(cat ${CMDLINE_UBUNTU} | grep 'cgroup' > /dev/null) ; then
+                error "Cgroup already enabled !"
+            else
+                ${cgroup_cmd} $CMDLINE_UBUNTU || error "Failed modify cgroup !"
+            fi
         else
-        	${cgroup_cmd} $CMDLINE_UBUNTU || error "Failed modify cgroup !"
-		fi
-	else
-		error "Can't enable cgroup. Please enable manually !"
-	fi
-	}
-
-check_arch_rpi() {
-	if [ "${MODELO}" != "armv7l" ]; then
-		error "This script is only intended to run on ARM (armv7l) devices."
-	elif [[ "${MODELO}" == *"aarch64"* ]] ; then
-		error "Currently Qlauncher doesn't support arm64 !"
-	fi
-	}
+            error "Can't enable cgroup. Please enable manually !"
+        fi
+    ${PRIN} "%b\\n" "${TICK}"
+}
 
 reboot_rpi() {
 	read -p "  [i] Reboot now to enable cgroup ? [y/N]" -n 1 -r
 		if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
 			error "Please reboot manually in order to activate cgroup !"
 		else
-			${ECMD} "${COLOUR_RESET}"
 			reboot
 		fi
-	}
+}
 
-rpm() {
-	tools_rpm
-	lolcat
-	req
-	source .bashrc
-	}
-
-deb() {
-	tools_deb
-	req
-	source .bashrc
-	}
+pkg() {
+    ${PRIN} " %b %s ... " "${INFO}" "Detect package manager"
+        if [[ ! -z $(which yum) ]] ; then
+            ${SLP}
+	        ${PRIN} "%b\\n" "${TICK}"
+            tools_rpm
+            req
+        elif [[ ! -z $(which apt-get) ]] ; then
+            ${SLP}
+	        ${PRIN} "%b\\n" "${TICK}"
+            tools_deb
+            req
+        else
+            ${SLP}
+	        ${PRIN} "%b\\n" "${CROSS}"
+            error "Failed to install script !"
+        fi
+}
 
 rpi() {
-	check_arch_rpi
-	tools_deb
-	req
-	cgroupfs
-	reboot_rpi
-	}
-
-x86() {
-	if [[ ! -z $(which yum) ]] ; then
-    	rpm
-	elif [[ ! -z $(which apt-get) ]] ; then
-    	deb
-	else
-		error "Failed to install ! Check your OS"
- 	fi
-	}
+    pkg
+    cgroupfs
+    reboot_rpi
+}
 
 # Need run as root user
+${PRIN} " %b %s ... " "${INFO}" "Detect root"
 if [[ $(id -u) -ne 0 ]] ; then
-	error "This scripts need run as root"
+	${SLP}
+	${PRIN} "%b\\n" "${CROSS}"
+	error "This script need run as root !"
 fi
+${SLP}
+${PRIN} "%b\\n" "${TICK}"
+
+# Detect qlauncher installed
+${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
+if [ -z /opt/qlauncherV2 ] ; then
+	${SLP}
+	${PRIN} "%b\\n" "${CROSS}"
+	curl -sfL ${repo_QL} | sh - || error "Failed to install !"
+fi
+${SLP}
+${PRIN} "%b\\n" "${TICK}"
 
 # Detect architecture and kick off
+${PRIN} " %b %s ... " "${INFO}" "Detect architecture"
 if [[ "${MODELO}" == *"x86_64"* ]] ; then
-	x86
+    ${SLP}
+    ${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s " "${INFO}" "Architecture : x86_86"
+    ${SLP}
+    ${PRIN} "%b\\n" "${TICK}"
+	pkg
 elif [[ "$(tr -d '\0' < /proc/device-tree/model)" == *"Raspberry Pi"* ]] ; then
+    ${SLP}
+    ${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s " "${INFO}" "Architecture : raspberry pi"
+	${SLP}
+    ${PRIN} "%b\\n" "${TICK}"
 	rpi
 else
-	error "Failed to install ! No architecture detected"
+    ${SLP}
+    ${PRIN} "%b\\n" "${CROSS}"
+    ${PRIN} " %b %s " "${INFO}" "Architecture : unknown"
+    ${SLP}
+    ${PRIN} "%b\\n" "${CROSS}"
+	error "Failed to install !"
 fi

@@ -3,6 +3,9 @@
 # [ Install ]
 * Use this command to install Qlauncher
     * `sudo su`
-	* `curl -sSL https://github.com/jakues/ql/raw/master/ql-install.sh | bash`
+	* Using curl
+		* `curl -sSL https://github.com/jakues/ql/raw/master/ql-install.sh | bash`
+	* Using wget
+		* `wget -qO- https://github.com/jakues/ql/raw/master/ql-install.sh | bash`
 * Script usage
-	* `Q --help`
+	* `ql --help`

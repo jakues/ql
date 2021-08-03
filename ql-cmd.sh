@@ -1,73 +1,112 @@
-#!/bin/sh
+#!/bin/bash
 
+export PRIN="printf"
 export ECMD="echo -e"
-export COLOUR_RESET='\e[0m'
-export aCOLOUR=(
-		'\e[1;33m'	# Yellow
-		'\e[1m'		# White
-		'\e[1;32m'	# Green
-		'\e[1;31m'  # Red
-	)
-export GREEN_BULLET="  [i] "
-export GREEN_WARN="  [${aCOLOUR[2]}✓${COLOUR_RESET}] "
-export RED_WARN="  [${aCOLOUR[3]}✗${COLOUR_RESET}] "
+export CR='\e[0m'
+export COL_LIGHT_GREEN='\e[1;32m'
+export COL_LIGHT_RED='\e[1;31m'
+export TICK="[${COL_LIGHT_GREEN}✓${CR}]"
+export CROSS="[${COL_LIGHT_RED}✗${CR}]"
+export INFO="[i]"
+export DONE="${COL_LIGHT_GREEN} done !${CR}"
+export SLP="sleep 0.69s"
+export dir_QR="/opt/.qlauncher-qr"
+export dir_ql="/usr/bin/ql"
 export ql="/opt/qlauncherV2/qlauncher.sh"
 export ql_RUNNING="${ql} check | grep '"edgecore_alive":"true"'"
+export ql_STOPPED="${ql} check | grep '"edgecore_alive":""'"
 export repo_QL="https://get.qlauncher.poseidon.network/install.sh"
 
 error() {
-	${ECMD} "${RED_WARN}${aCOLOUR[3]}$1 ${COLOUR_RESET}"
-	exit 1
+    ${PRIN} "%b\\n" " ${CROSS} $1"
+    exit
 }
 
-# Need run as root user
-if [[ $(id -u) -ne 0 ]] ; then
-	error "This script need run as root !"
+soedo() {
+	# Need run as root user
+	${PRIN} " %b %s ... " "${INFO}" "Detect root"
+	if [[ $(id -u) -ne 0 ]] ; then
+		${SLP}
+		${PRIN} "%b\\n" "${CROSS}"
+		error "This script need run as root !"
+	fi
+	${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+}
+
+ql_instd() {
+# Detect qlauncher installed
+${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
+if [ -z /opt/qlauncherV2 ] ; then
+	${SLP}
+	${PRIN} "%b\\n" "${CROSS}"
+	curl -sSL https://github.com/jakues/ql/raw/master/ql-install.sh | bash || error "Failed to install !"
 fi
+${SLP}
+${PRIN} "%b\\n" "${TICK}"
+}
 
 start() {
-	if [[ ! ${ql_RUNNING} ]] ; then
-		${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Qlauncher isn't running${COLOUR_RESET}"
-		systemctl start qlauncher || error "Failed to start qlauncher !"
-		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Qlauncher is now running.${COLOUR_RESET}"
-		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Please wait until the container alive${COLOUR_RESET}"
-	else
-		error "Qlauncher already running"
-		error "Failed to start !"
-	fi
+	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
+		if [[ "$(systemctl is-active qlauncher)" == *"failed"* ]] ; then
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s ... " "${INFO}" "Starting qlauncher"
+			systemctl start qlauncher || error "Failed to start qlauncher"
+			${PRIN} "%b\\n" "${DONE}"
+		else
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s " "${INFO}" "Qlauncher is running"
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			error "Failed to start qlauncher !"
+		fi
 	}
 
 stop() {
-	if [[ ${ql_RUNNING} ]] ; then
-		${ECMD} "${GREEN_BULLET}${aCOLOUR[2]}Qlauncher is running${COLOUR_RESET}"
-		systemctl stop qlauncher || error "Failed to stop qlauncher !"
-		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Qlauncher is now stopped.${COLOUR_RESET}"
-	else
-		error "Failed to stop qlauncher !"
-	fi
+	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
+		if [[ "$(systemctl is-active qlauncher)" == *"active"* ]] ; then
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s ... " "${INFO}" "Stopping qlauncher"
+			systemctl stop qlauncher || error "Failed to stop qlauncher"
+			${PRIN} "%b\\n" "${DONE}"
+		else
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s " "${INFO}" "Qlauncher isn't running"
+			${SLP}
+			${PRIN} "%b\\n" "${CROSS}"
+			error "Failed to stop qlauncher !"
+		fi
 	}
 
 restart () {
-	if [[ ${ql_RUNNING} ]] ; then
-		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Restarting qlauncher ...${COLOUR_RESET}"
-		systemctl restart qlauncher || error "Failed to restart qlauncher"
-		${ECMD} "${GREEN_WARN}${aCOLOUR[2]}Restarting qlauncher done !${COLOUR_RESET}"
-	elif [[ ! ${ql_RUNNING} ]] ; then
-		start
-	fi
+	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
+		if [[ "$(systemctl is-active qlauncher)" == *"active"* ]] ; then
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s ... " "${INFO}" "Restarting qlauncher"
+			systemctl restart qlauncher || error "Failed to restart qlauncher"
+			${PRIN} "%b\\n" "${DONE}"
+		elif [[ ! ${ql_RUNNING} ]] ; then
+			start
+		fi
 }
 
 check() {
 	export ql_check="2-26 28-68 90-114 116-136 138-160 162-183 185-205"
-		for z in ${ql_check}
-		do
+	${ECMD}
+		for z in ${ql_check} ; do
 			${ql} check | cut -c ${z}
 		done
+	${ECMD}
     }
 
 status() {
-	${ECMD} \
-        ; ${ql} status \
+	${ECMD}
+    ${ql} status
     ${ECMD}
 }
 
@@ -81,23 +120,42 @@ bind() {
 	${ECMD}
 }
 
+log() {
+    export dir_qlog="/opt/qlauncherV2/log/qlauncher.log"
+    export dir_alog="/opt/qlauncherV2/log/agent.log"
+    export qlog="${HOME}/ql.log"
+    cat ${dir_qlog} >> ${qlog}
+    cat ${dir_alog} >> ${qlog}
+	${PRIN} " %b %s \n" "${INFO}" "Qlauncher log :"
+    tail ${dir_qlog} | lolcat
+	${PRIN} " %b %s \n" "${INFO}" "Agent log :"
+    tail ${dir_alog} | lolcat
+    read -p " [?] Upload log to bashupload.com ? [y/N]" -n 1 -r
+		if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+			error "Please screnshoot this log to admin !"
+		else
+            curl -f https://bashupload.com/ -T ${qlog} || curl https://bashupload.com/ -T ${qlog} || error "Failed to upload !"
+			${PRIN} " %b %s \n" "${INFO}" "Please send this log to admin !"
+		fi
+}
+
 inst() {
 	if [ -d /opt/qlauncherV2 ]; then
 		error "Qlauncher already installed !"
 	else
-		${ECMD} "Qlauncher not installed !"
-		${ECMD} "Installing ..."
-		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
-		${ECMD} "Installing qlauncher done !"
+        ${PRIN} " %b %s\n" "${INFO}" "Qlauncher not installed !"
+        ${PRIN} " %b %s ... " "${INFO}" "Installing"
+		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! Check the system requirements."
+		${PRIN} "%b\\n" "${TICK}"
 	fi
 }
 
 unst() {
 	if [ -d /opt/qlauncherV2 ]; then
-		${ECMD} "Uninstalling qlauncher ..."
 		${ql} stop || error "Failed to stop qlauncher !"
 		${ql} uninstall || error "Failed to uninstall qlauncher !"
-		${ECMD} "Uninstalling qlauncher done !"
+        ${PRIN} " %b %s ... " "${INFO}" "Uninstalling qlauncher"
+		${PRIN} "%b\\n" "${TICK}"
 	else
 		error "Qlauncher not installed !"
 	fi
@@ -105,28 +163,41 @@ unst() {
 
 reinst() {
 	if [ -d /opt/qlauncherV2 ]; then
-		${ECMD} "Reinstalling qlauncher ..."
 		${ql} stop || error "Failed to stop qlauncher !"
 		${ql} uninstall || error "Failed to uninstall qlauncher !"
-		${ql} install || error "Failed to install qlauncher !"
-		${ECMD} "Reinstall qlauncher done !"
+		rm -rf /opt/qlauncherV2 || error "Failed to remove qlauncher directory"
+		curl -sfL ${repo_QL} | sh - || error "Failed to install qlauncher !"
+		${PRIN} " %b %s ... " "${INFO}" "Reinstalling qlauncher"
+        ${PRIN} "%b\\n" "${TICK}"
 	else
-		${ECMD} "Qlauncher not installed !"
-		${ECMD} "Installing ..."
-		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! maybe check the system requirements"
-		${ECMD} "Installing qlauncher done !"
+        ${PRIN} " %b %s\n" "${INFO}" "Qlauncher not installed !"
+		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! Check the system requirements."
+        ${PRIN} " %b %s ... " "${INFO}" "Installing qlauncher"
+		${PRIN} "%b\\n" "${TICK}"
 	fi
 }
 
 port() {
 	export MYIP=$(wget -t 3 -T 15 -qO- http://ipv4.icanhazip.com)
-	if [[ $(which nmap) == *"nmap"* ]] ; then
-		nmap -p 32440-32449 $MYIP | lolcat
-	else
-		error "Nmap not found !"
-		error "Please install nmap !"
-	fi
+	${PRIN} " %b %s ... " "${INFO}" "Detect nmap"
+		if [[ $(which nmap) == *"nmap"* ]] ; then
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			${ECMD}
+			nmap -p 32440-32449 $MYIP | lolcat
+		else
+			${SLP}
+			${PRIN} "%b\\n" "${CROSS}"
+			error "Please install nmap !"
+		fi
 	}
+
+pull() {
+	export img="docker-registry.poseidon.network/qlauncher-sysinfo-x86:0.6.6 docker-registry.poseidon.network/qservice-ipfs-cluster-x86:1.10.0 docker-registry.poseidon.network/qservice-v2ray:0.0.5 docker.io/ipfs/go-ipfs:v0.7.0 docker.io/library/telegraf:1.19-alpine docker.io/rancher/pause:3.1"
+		for p in ${img} ; do
+			crictl pull ${img} || error "Failed pull image !"
+		done
+}
 
 update() {
 	export RPM=$(which yum)
@@ -134,50 +205,99 @@ update() {
 	export dir_QR="/opt/.qlauncher-qr"
 	export dir_qlcmd="/opt/.ql-cmd.sh"
 	export repo_qlcmd="https://github.com/jakues/ql/raw/master/ql-cmd.sh"
-		if [[ ! -z $RPM ]]; then
-			yum update -y ; yum upgrade -y ; yum install epel-release wget net-tools qrencode ruby nmap dmidecode unzip -y || error "Update failed !"
-		elif [[ ! -z $APT ]]; then
-    		apt-get update -qq -y ; apt-get upgrade -qq -y ; apt-get install wget net-tools qrencode nmap dmidecode lolcat -qq -y || error "Update failed !"
+	${PRIN} " %b %s ... " "${INFO}" "Detect package manager"
+		if [[ ! -z ${RPM} ]] ; then
+		    ${SLP}
+	        ${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s " "${INFO}" "Package Manager : yum"
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			# Update
+			${PRIN} " %b %s ... \n" "${INFO}" "Updating repo"
+				yum update -y || error "Update failed !"
+			${PRIN} " %b %s " "${INFO}" "Update repo"
+			${PRIN} "%b" "${DONE}"
+			${SLP}
+			${PRIN} " %b\\n" "${TICK}"
+			# Upgrade
+			${PRIN} " %b %s ... \n" "${INFO}" "Upgrading packages"
+				yum upgrade -y || error "Upgrade failed !"
+			${PRIN} " %b %s " "${INFO}" "Upgrade packages"
+			${PRIN} "%b" "${DONE}"
+			${SLP}
+			${PRIN} " %b\\n" "${TICK}"
+			# Install
+			${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
+				yum install epel-release wget net-tools qrencode ruby nmap dmidecode lolcat -y || error "Install the requirements package failed !"
+			${PRIN} " %b %s " "${INFO}" "Install packages"
+			${PRIN} "%b" "${DONE}"
+			${SLP}
+			${PRIN} " %b\\n" "${TICK}"
+		elif [[ ! -z ${APT} ]] ; then
+			${SLP}
+	        ${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s " "${INFO}" "Package Manager : apt-get"
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			# Update
+			${PRIN} " %b %s ... \n" "${INFO}" "Updating repo"
+				apt-get update -qq -y || error "Update failed !"
+			${PRIN} " %b %s " "${INFO}" "Update repo"
+			${PRIN} "%b" "${DONE}"
+			${SLP}
+			${PRIN} " %b\\n" "${TICK}"
+			# Upgrade
+			${PRIN} " %b %s ... \n" "${INFO}" "Upgrading packages"
+				apt-get upgrade -qq -y || error "Upgrade failed !"
+			${PRIN} " %b %s " "${INFO}" "Upgrade packages"
+			${PRIN} "%b" "${DONE}"
+			${SLP}
+			${PRIN} " %b\\n" "${TICK}"
+			# Install
+			${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
+				apt-get install wget net-tools qrencode nmap dmidecode lolcat -qq -y || error "Install the requirements package failed !"
+			${PRIN} " %b %s " "${INFO}" "Install packages"
+			${PRIN} "%b" "${DONE}"
+			${SLP}
+			${PRIN} " %b\\n" "${TICK}"
 		else
-    		error "Check your OS !"
+    		${SLP}
+	        ${PRIN} "%b\\n" "${CROSS}"
+			error "Operation failed !"
 		fi
-	wget -q ${repo_qlcmd} -O ${dir_qlcmd}
-	chmod +x ${dir_qlcmd}
+	wget -q ${repo_qlcmd} -O ${dir_ql} || error "Failed download ql-cmd.sh !"
+    chmod +x ${dir_ql} || error "Failed change permission"
 	${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
-	${ECMD} "alias ql='bash /opt/.ql-cmd.sh'" >> ${HOME}/.bash_aliases
-	${ECMD} "alias qq='/opt/qlauncherV2/qlauncher.sh'" >> ${HOME}/.bash_aliases
-	source .bashrc
 }
 
 hostname() {
-	${ECMD} "${aCOLOUR[0]}		[i] The current hostname is : ${aCOLOUR[2]}$CUR_HOSTNAME\n${aCOLOUR[0]}"
-	read -r -p "		[i] Enter new hostname : " NEW_HOSTNAME
-	${ECMD} "${aCOLOUR[0]}"
-	export CUR_HOSTNAME=$(cat /etc/hostname)
+    export CUR_HOSTNAME=$(cat /etc/hostname)
+    ${PRIN} " %b %s" "${INFO}" "Current hostname is : ${CUR_HOSTNAME}"
+    read -r -p "  [i] Enter new hostname : " NEW_HOSTNAME
+    ${ECMD}
 	hostnamectl set-hostname "${NEW_HOSTNAME}"
 	sudo sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hosts
 	sudo sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hostname
-	read -p "		[i] Reboot now to change hostname ? [y/N]" -n 1 -r
+	read -p "  [?] Reboot now to change hostname ? [y/N]" -n 1 -r
 		if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
 			error "Please reboot manually !"
 		else
-			${ECMD} "${COLOUR_RESET}"
+			${ECMD}
 			reboot
 		fi
 	}
 
 change_hwsn() {
-	${ECMD} ${aCOLOUR[0]}
 	export CUR_HWSN=$(cat /etc/machine-id)
-	${ECMD} "${aCOLOUR[0]}		[i] The current hwsn is : ${aCOLOUR[2]}$CUR_HWSN${aCOLOUR[0]}"
-		read -r -p "		[i] Enter new hwsn : " SN
+	${ECMD} "  [i] The current hwsn is : ${CUR_HWSN}"
+		read -r -p "  [i] Enter new hwsn : " SN
 			${ECMD} ${SN} > /etc/qlauncher
 			${ECMD} ${SN} > /etc/machine-id
-			restart
+		restart
 	}
 
 help() {
-	${ECMD} "\n Usage: Q [OPTION]...\n"
+	${ECMD} "\n Usage: ql [OPTION]...\n"
 	${ECMD} "  Main Usage :"
 	${ECMD} "    -s, --start		start Qlauncher service"
 	${ECMD} "    -c, --stop		stop Qlauncher service"
@@ -185,11 +305,13 @@ help() {
 	${ECMD} "    -i, --check		check Qlauncher tick"
 	${ECMD} "    -l, --stat		show status container"
 	${ECMD} "    -b, --bind		get Qlauncher QR Code"
+    ${ECMD} "    --log		get Qlauncher logs"
 	${ECMD} "    --install		install qlauncher"
-	${ECMD} "    --uninstall	uninstall qlauncher"
-	${ECMD} "    --reinstall	reinstall qlauncher"
+	${ECMD} "    --uninstall		uninstall qlauncher"
+	${ECMD} "    --reinstall		reinstall qlauncher"
 	${ECMD} "\n  Miscellaneous :"
 	${ECMD} "    -P			check port status using nmap"
+	${ECMD} "    --pull		pull Qlauncher image manual"
 	${ECMD} "    --update		update script"
 	${ECMD} "    --hostname		change hostname"
 	${ECMD} "\n  Report this script to: <https://github.com/jakues/one-hit/issues>"
@@ -199,50 +321,56 @@ help() {
 	}
 
 null() {
-	${ECMD} "\nUsage: Q [OPTION]...\n"
-	${ECMD} "Try 'Q --help' for more information.\n"
+	${ECMD} "\nUsage: ql [OPTION]...\n"
+	${ECMD} "Try 'ql --help' for more information.\n"
 	}
 
 
 case "$1" in
 	-s|--start)
-		start
+		soedo ; ql_instd ; start
 ;;
 	-c|--stop)
-		stop
+		soedo ; ql_instd ; stop
 ;;
 	-r|--restart)
-	restart
+		soedo ; ql_instd ; restart
 ;;
 	-i|--check)
-		check | lolcat
+		soedo ; ql_instd ; check | lolcat
 ;;
 	-l|--stat)
-		status | lolcat
+		soedo ; ql_instd ; status | lolcat
 ;;
 	-b|--bind)
-		bind
+		soedo ; ql_instd ; bind
+;;
+    --log)
+        soedo ; ql_instd ; log
 ;;
 	--install)
-		inst
+		soedo ; ql_instd ; inst
 ;;
 	--uninstall)
-		unst
+		soedo ; ql_instd ; unst
 ;;
 	--reinstall)
-		reinst
+		soedo ; ql_instd ; reinst
 ;;
 	-P)
-		port
+		soedo ; ql_instd ; port
+;;
+	--pull)
+		soedo ; ql_instd ; pull
 ;;
 	--update)
-		update
+		soedo ; ql_instd ; update
 ;;
 	--hostname)
-		hostname
+		soedo ; ql_instd ; hostname
 ;;
 	--sn)
-		change_hwsn
+		soedo ; ql_instd ; change_hwsn
 ;;
 	--help)
 		help | lolcat
