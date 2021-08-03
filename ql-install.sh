@@ -172,7 +172,7 @@ ${PRIN} "%b\\n" "${TICK}"
 
 # Detect inet connections
 ${PRIN} " %b %s ... " "${INFO}" "Detect connections"
-if [[ ! $(ping -q -c 1 -W 1 8.8.8.8) ]] ; then 
+if [[ $(ping -q -c 1 -W 1 8.8.8.8) ]] ; then 
     ${SLP}
     ${PRIN} "%b\\n" "${TICK}"
 else 
