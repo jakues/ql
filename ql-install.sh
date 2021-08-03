@@ -8,6 +8,7 @@ export COL_LIGHT_RED='\e[1;31m'
 export TICK="[${COL_LIGHT_GREEN}✓${CR}]"
 export CROSS="[${COL_LIGHT_RED}✗${CR}]"
 export INFO="[i]"
+export QST="[?]"
 export DONE="${COL_LIGHT_GREEN} done !${CR}"
 export SLP="sleep 0.69s"
 export dir_QR="/opt/.qlauncher-qr"
@@ -76,7 +77,7 @@ tools_rpm() {
 }
 
 ql_inst() {
-    ${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
+    ${PRIN} " %b %s " "${QST}" "Qlauncher installed ?"
     if [ ! -d /opt/qlauncherV2 ] ; then
         ${SLP}
         ${PRIN} "%b\\n" "${CROSS}"
@@ -87,6 +88,7 @@ ql_inst() {
         ${SLP}
         ${PRIN} " %b\\n" "${TICK}"
     fi
+    ${PRIN} "\n %b %s " "${INFO}" "Detect qlauncher"
     ${SLP}
     ${PRIN} "%b\\n" "${TICK}"
 }
