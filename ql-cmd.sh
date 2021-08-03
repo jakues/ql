@@ -314,7 +314,7 @@ help() {
 	${ECMD} "    --pull		pull Qlauncher image manual"
 	${ECMD} "    --update		update script"
 	${ECMD} "    --hostname		change hostname"
-	${ECMD} "\n  Report this script to: <https://github.com/jakues/one-hit/issues>"
+	${ECMD} "\n  Report this script to: <https://github.com/jakues/ql/issues>"
 	${ECMD} "  Report Qlauncher bugs to: <https://github.com/poseidon-network/qlauncher-linux/issues>"
 	${ECMD} "  Qlauncher github: <https://github.com/poseidon-network/qlauncher-linux>"
 	${ECMD} "  Poseidon Network home page: <https://poseidon.network/>\n"
