@@ -42,7 +42,7 @@ tools_deb() {
 	${PRIN} " %b\\n" "${TICK}"
     # Install
     ${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
-    	apt-get install wget net-tools qrencode nmap dmidecode lolcat -qq -y || error "Install the requirements package failed !"
+    	apt-get install wget net-tools qrencode nmap dmidecode lolcat docker.io -qq -y || error "Install the requirements package failed !"
     ${PRIN} " %b %s " "${INFO}" "Install packages"
     ${PRIN} "%b" "${DONE}"
     ${SLP}
@@ -69,7 +69,7 @@ tools_rpm() {
 	${PRIN} " %b\\n" "${TICK}"
     # Install
     ${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
-        yum install epel-release wget net-tools qrencode ruby nmap dmidecode lolcat -y || error "Install the requirements package failed !"
+        yum install epel-release wget net-tools qrencode ruby nmap dmidecode lolcat docker.io -y || error "Install the requirements package failed !"
     ${PRIN} " %b %s " "${INFO}" "Install packages"
     ${PRIN} "%b" "${DONE}"
     ${SLP}
@@ -103,9 +103,9 @@ req() {
 	${PRIN} " %b\\n" "${TICK}"
     if [[ $(grep "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin" /etc/environment) ]] ; then
         ${PRIN} "\n %b %s " "${INFO}" "Detect environment PATH"
-        export dir_lolcat=/usr/games/lolcat
-        export dir_lols=/usr/bin/lolcat
-        ln -sf ${dir_lolcat} ${dir_lols}
+            export dir_lolcat=/usr/games/lolcat
+            export dir_lols=/usr/bin/lolcat
+            ln -sf ${dir_lolcat} ${dir_lols}
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     fi
@@ -135,7 +135,7 @@ cgroupfs() {
 }
 
 reboot_rpi() {
-	read -p "  [i] Reboot now to enable cgroup ? [y/N]" -n 1 -r
+	read -p " [i] Reboot now to enable cgroup ? [y/N]" -n 1 -r
 		if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
 			error "Please reboot manually in order to activate cgroup !"
 		else

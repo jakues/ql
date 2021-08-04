@@ -8,6 +8,7 @@ export COL_LIGHT_RED='\e[1;31m'
 export TICK="[${COL_LIGHT_GREEN}✓${CR}]"
 export CROSS="[${COL_LIGHT_RED}✗${CR}]"
 export INFO="[i]"
+export QST="[?]"
 export DONE="${COL_LIGHT_GREEN} done !${CR}"
 export SLP="sleep 0.69s"
 export dir_QR="/opt/.qlauncher-qr"
@@ -47,15 +48,16 @@ inet() {
 }
 
 ql_instd() {
-# Detect qlauncher installed
-${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
-if [ -z /opt/qlauncherV2 ] ; then
-	${SLP}
-	${PRIN} "%b\\n" "${CROSS}"
-	curl -sSL https://github.com/jakues/ql/raw/master/ql-install.sh | bash || error "Failed to install !"
-fi
-${SLP}
-${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s " "${QST}" "Qlauncher installed ?"
+    if [ ! -d /opt/qlauncherV2 ] ; then
+        ${SLP}
+        ${PRIN} "%b\\n" "${CROSS}"
+		${PRIN} " %b %s \n" "${INFO}" "Please refer to : https://github.com/jakues/ql"
+		error "Qlauncher not installed"
+	fi
+    ${PRIN} "\n %b %s " "${INFO}" "Detect qlauncher"
+    ${SLP}
+    ${PRIN} "%b\\n" "${TICK}"
 }
 
 start() {
@@ -74,7 +76,7 @@ start() {
 			${PRIN} "%b\\n" "${TICK}"
 			error "Failed to start qlauncher !"
 		fi
-	}
+}
 
 stop() {
 	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
@@ -92,9 +94,9 @@ stop() {
 			${PRIN} "%b\\n" "${CROSS}"
 			error "Failed to stop qlauncher !"
 		fi
-	}
+}
 
-restart () {
+restart() {
 	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
 		if [[ "$(systemctl is-active qlauncher)" == *"active"* ]] ; then
 			${SLP}
@@ -156,18 +158,31 @@ inst() {
 		error "Qlauncher already installed !"
 	else
         ${PRIN} " %b %s\n" "${INFO}" "Qlauncher not installed !"
-        ${PRIN} " %b %s ... " "${INFO}" "Installing"
+        ${PRIN} " %b %s ... \n" "${INFO}" "Installing qlauncher"
 		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! Check the system requirements."
-		${PRIN} "%b\\n" "${TICK}"
+		${PRIN} " %b %s " "${INFO}" "Install qlauncher"
+		${PRIN} "%b" "${DONE}"
+		${SLP}
+		${PRIN} " %b\\n" "${TICK}"
 	fi
 }
 
 unst() {
 	if [ -d /opt/qlauncherV2 ]; then
-		${ql} stop || error "Failed to stop qlauncher !"
-		${ql} uninstall || error "Failed to uninstall qlauncher !"
-        ${PRIN} " %b %s ... " "${INFO}" "Uninstalling qlauncher"
-		${PRIN} "%b\\n" "${TICK}"
+		read -p " [?] Are you want to uninstall qlauncher ? [y/N]" -n 1 -r
+			if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+				${ECMD}
+				error "Operation canceled !"
+			else
+				${ECMD}
+				stop
+				${PRIN} " %b %s ... \n" "${INFO}" "Uninstalling qlauncher"
+				${ql} uninstall || error "Failed to uninstall qlauncher !"
+				${PRIN} " %b %s " "${INFO}" "Uninstall qlauncher"
+				${PRIN} "%b" "${DONE}"
+				${SLP}
+				${PRIN} " %b\\n" "${TICK}"
+			fi
 	else
 		error "Qlauncher not installed !"
 	fi
@@ -175,12 +190,26 @@ unst() {
 
 reinst() {
 	if [ -d /opt/qlauncherV2 ]; then
-		${ql} stop || error "Failed to stop qlauncher !"
+		# Stop ql
+		stop
+		# Uninstall ql
+		${PRIN} " %b %s ... \n" "${INFO}" "Uninstalling qlauncher"
 		${ql} uninstall || error "Failed to uninstall qlauncher !"
+		${PRIN} " %b %s " "${INFO}" "Uninstall qlauncher"
+		${PRIN} "%b" "${DONE}"
+		${SLP}
+		${PRIN} " %b\\n" "${TICK}"
+		# Remove dir ql
+		${PRIN} " %b %s ... " "${INFO}" "Remove qlauncher dir"
 		rm -rf /opt/qlauncherV2 || error "Failed to remove qlauncher directory"
-		curl -sfL ${repo_QL} | sh - || error "Failed to install qlauncher !"
-		${PRIN} " %b %s ... " "${INFO}" "Reinstalling qlauncher"
-        ${PRIN} "%b\\n" "${TICK}"
+		${PRIN} "%b\\n" "${TICK}"
+		# Install ql again
+		${PRIN} " %b %s ... \n" "${INFO}" "Installing qlauncher"
+		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! Check the system requirements."
+		${PRIN} " %b %s " "${INFO}" "Install qlauncher"
+		${PRIN} "%b" "${DONE}"
+		${SLP}
+		${PRIN} " %b\\n" "${TICK}"
 	else
         ${PRIN} " %b %s\n" "${INFO}" "Qlauncher not installed !"
 		curl -sfL ${repo_QL} | sh - || error "Failed install qlauncher ! Check the system requirements."
@@ -212,101 +241,37 @@ pull() {
 }
 
 update() {
-	export RPM=$(which yum)
-	export APT=$(which apt-get)
-	export dir_QR="/opt/.qlauncher-qr"
-	export dir_qlcmd="/opt/.ql-cmd.sh"
-	export repo_qlcmd="https://github.com/jakues/ql/raw/master/ql-cmd.sh"
-	${PRIN} " %b %s ... " "${INFO}" "Detect package manager"
-		if [[ ! -z ${RPM} ]] ; then
-		    ${SLP}
-	        ${PRIN} "%b\\n" "${TICK}"
-			${PRIN} " %b %s " "${INFO}" "Package Manager : yum"
-			${SLP}
-			${PRIN} "%b\\n" "${TICK}"
-			# Update
-			${PRIN} " %b %s ... \n" "${INFO}" "Updating repo"
-				yum update -y || error "Update failed !"
-			${PRIN} " %b %s " "${INFO}" "Update repo"
-			${PRIN} "%b" "${DONE}"
-			${SLP}
-			${PRIN} " %b\\n" "${TICK}"
-			# Upgrade
-			${PRIN} " %b %s ... \n" "${INFO}" "Upgrading packages"
-				yum upgrade -y || error "Upgrade failed !"
-			${PRIN} " %b %s " "${INFO}" "Upgrade packages"
-			${PRIN} "%b" "${DONE}"
-			${SLP}
-			${PRIN} " %b\\n" "${TICK}"
-			# Install
-			${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
-				yum install epel-release wget net-tools qrencode ruby nmap dmidecode lolcat -y || error "Install the requirements package failed !"
-			${PRIN} " %b %s " "${INFO}" "Install packages"
-			${PRIN} "%b" "${DONE}"
-			${SLP}
-			${PRIN} " %b\\n" "${TICK}"
-		elif [[ ! -z ${APT} ]] ; then
-			${SLP}
-	        ${PRIN} "%b\\n" "${TICK}"
-			${PRIN} " %b %s " "${INFO}" "Package Manager : apt-get"
-			${SLP}
-			${PRIN} "%b\\n" "${TICK}"
-			# Update
-			${PRIN} " %b %s ... \n" "${INFO}" "Updating repo"
-				apt-get update -qq -y || error "Update failed !"
-			${PRIN} " %b %s " "${INFO}" "Update repo"
-			${PRIN} "%b" "${DONE}"
-			${SLP}
-			${PRIN} " %b\\n" "${TICK}"
-			# Upgrade
-			${PRIN} " %b %s ... \n" "${INFO}" "Upgrading packages"
-				apt-get upgrade -qq -y || error "Upgrade failed !"
-			${PRIN} " %b %s " "${INFO}" "Upgrade packages"
-			${PRIN} "%b" "${DONE}"
-			${SLP}
-			${PRIN} " %b\\n" "${TICK}"
-			# Install
-			${PRIN} " %b %s ... \n" "${INFO}" "Installing packages"
-				apt-get install wget net-tools qrencode nmap dmidecode lolcat -qq -y || error "Install the requirements package failed !"
-			${PRIN} " %b %s " "${INFO}" "Install packages"
-			${PRIN} "%b" "${DONE}"
-			${SLP}
-			${PRIN} " %b\\n" "${TICK}"
-		else
-    		${SLP}
-	        ${PRIN} "%b\\n" "${CROSS}"
-			error "Operation failed !"
-		fi
-	wget -q ${repo_qlcmd} -O ${dir_ql} || error "Failed download ql-cmd.sh !"
-    chmod +x ${dir_ql} || error "Failed change permission"
-	${ECMD} "qapp://edge.binding?type=QL2&brand=POSEIDON&sn=$(cat /etc/machine-id)" > ${dir_QR} || error "Failed create qr code !"
+	curl -sSL https://github.com/jakues/ql/raw/master/ql-install.sh | bash
 }
 
 hostname() {
     export CUR_HOSTNAME=$(cat /etc/hostname)
     ${PRIN} " %b %s" "${INFO}" "Current hostname is : ${CUR_HOSTNAME}"
-    read -r -p "  [i] Enter new hostname : " NEW_HOSTNAME
+    read -r -p " [?] Enter new hostname : " NEW_HOSTNAME
     ${ECMD}
 	hostnamectl set-hostname "${NEW_HOSTNAME}"
 	sudo sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hosts
 	sudo sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hostname
-	read -p "  [?] Reboot now to change hostname ? [y/N]" -n 1 -r
+	read -p " [?] Reboot now to change hostname ? [y/N]" -n 1 -r
 		if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+			${ECMD}
 			error "Please reboot manually !"
 		else
 			${ECMD}
 			reboot
 		fi
-	}
+}
 
 change_hwsn() {
 	export CUR_HWSN=$(cat /etc/machine-id)
-	${ECMD} "  [i] The current hwsn is : ${CUR_HWSN}"
-		read -r -p "  [i] Enter new hwsn : " SN
-			${ECMD} ${SN} > /etc/qlauncher
-			${ECMD} ${SN} > /etc/machine-id
-		restart
-	}
+	${ECMD} " [i] The current hwsn is : ${CUR_HWSN}"
+		read -r -p " [i] Enter new hwsn : " SN
+		${ECMD} ${SN} > /etc/qlauncher
+		${ECMD} ${SN} > /etc/machine-id
+	${PRIN} " %b %s ... " "${INFO}" "Restarting qlauncher"
+	systemctl restart qlauncher || error "Failed to restart qlauncher"
+	${PRIN} "%b\\n" "${DONE}"
+}
 
 help() {
 	${ECMD} "\n Usage: ql [OPTION]...\n"
@@ -330,12 +295,12 @@ help() {
 	${ECMD} "  Report Qlauncher bugs to: <https://github.com/poseidon-network/qlauncher-linux/issues>"
 	${ECMD} "  Qlauncher github: <https://github.com/poseidon-network/qlauncher-linux>"
 	${ECMD} "  Poseidon Network home page: <https://poseidon.network/>\n"
-	}
+}
 
 null() {
 	${ECMD} "\nUsage: ql [OPTION]...\n"
 	${ECMD} "Try 'ql --help' for more information.\n"
-	}
+}
 
 
 case "$1" in
@@ -361,13 +326,13 @@ case "$1" in
         soedo ; inet ; ql_instd ; log
 ;;
 	--install)
-		soedo ; inet ; ql_instd ; inst
+		soedo ; inet ; inst
 ;;
 	--uninstall)
-		soedo ; inet ; ql_instd ; unst
+		soedo ; inet ; unst
 ;;
 	--reinstall)
-		soedo ; inet ; ql_instd ; reinst
+		soedo ; inet ; reinst
 ;;
 	-P)
 		soedo ; inet ; ql_instd ; port
@@ -379,7 +344,7 @@ case "$1" in
 		soedo ; inet ; ql_instd ; update
 ;;
 	--hostname)
-		soedo ; inet ; ql_instd ; hostname
+		soedo ; hostname
 ;;
 	--sn)
 		soedo ; inet ; ql_instd ; change_hwsn
