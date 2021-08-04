@@ -101,6 +101,14 @@ req() {
 	${PRIN} "%b" "${DONE}"
     ${SLP}
 	${PRIN} " %b\\n" "${TICK}"
+    if [[ $(grep "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin" /etc/environment) ]] ; then
+        ${PRIN} "\n %b %s " "${INFO}" "Detect environment PATH"
+        export dir_lolcat=/usr/games/lolcat
+        export dir_lols=/usr/bin/lolcat
+        ln -sf ${dir_lolcat} ${dir_lols}
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
+    fi
 }
 
 cgroupfs() {

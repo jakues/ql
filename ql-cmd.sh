@@ -34,6 +34,18 @@ soedo() {
 	${PRIN} "%b\\n" "${TICK}"
 }
 
+inet() {
+	${PRIN} " %b %s ... " "${INFO}" "Detect connections"
+	if [[ $(ping -q -c 1 -W 1 8.8.8.8) ]] ; then 
+		${SLP}
+		${PRIN} "%b\\n" "${TICK}"
+	else 
+		${SLP}
+		${PRIN} "%b\\n" "${CROSS}"
+		error "No internet connections !"
+	fi
+}
+
 ql_instd() {
 # Detect qlauncher installed
 ${PRIN} " %b %s ... " "${INFO}" "Qlauncher installed"
@@ -328,49 +340,49 @@ null() {
 
 case "$1" in
 	-s|--start)
-		soedo ; ql_instd ; start
+		soedo ; inet ; ql_instd ; start
 ;;
 	-c|--stop)
-		soedo ; ql_instd ; stop
+		soedo ; inet ; ql_instd ; stop
 ;;
 	-r|--restart)
-		soedo ; ql_instd ; restart
+		soedo ; inet ; ql_instd ; restart
 ;;
 	-i|--check)
-		soedo ; ql_instd ; check | lolcat
+		soedo ; inet ; ql_instd ; check | lolcat
 ;;
 	-l|--stat)
-		soedo ; ql_instd ; status | lolcat
+		soedo ; inet ; ql_instd ; status | lolcat
 ;;
 	-b|--bind)
-		soedo ; ql_instd ; bind
+		soedo ; inet ; ql_instd ; bind
 ;;
     --log)
-        soedo ; ql_instd ; log
+        soedo ; inet ; ql_instd ; log
 ;;
 	--install)
-		soedo ; ql_instd ; inst
+		soedo ; inet ; ql_instd ; inst
 ;;
 	--uninstall)
-		soedo ; ql_instd ; unst
+		soedo ; inet ; ql_instd ; unst
 ;;
 	--reinstall)
-		soedo ; ql_instd ; reinst
+		soedo ; inet ; ql_instd ; reinst
 ;;
 	-P)
-		soedo ; ql_instd ; port
+		soedo ; inet ; ql_instd ; port
 ;;
 	--pull)
-		soedo ; ql_instd ; pull
+		soedo ; inet ; ql_instd ; pull
 ;;
 	--update)
-		soedo ; ql_instd ; update
+		soedo ; inet ; ql_instd ; update
 ;;
 	--hostname)
-		soedo ; ql_instd ; hostname
+		soedo ; inet ; ql_instd ; hostname
 ;;
 	--sn)
-		soedo ; ql_instd ; change_hwsn
+		soedo ; inet ; ql_instd ; change_hwsn
 ;;
 	--help)
 		help | lolcat
