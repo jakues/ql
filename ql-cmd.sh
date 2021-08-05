@@ -60,7 +60,7 @@ ql_instd() {
 
 start() {
 	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
-		if [[ "$(systemctl is-active qlauncher)" == *"inactive"* ]] ; then
+		if [[ "$(systemctl is-active qlauncher)" == "inactive" ]] ; then
 			${SLP}
 			${PRIN} "%b\\n" "${TICK}"
 			${PRIN} " %b %s ... " "${INFO}" "Starting qlauncher"
@@ -78,13 +78,13 @@ start() {
 
 stop() {
 	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
-		if [[ "$(systemctl is-active qlauncher)" == *"active"* ]] ; then
+		if [[ "$(systemctl is-active qlauncher)" == "active" ]] ; then
 			${SLP}
 			${PRIN} "%b\\n" "${TICK}"
 			${PRIN} " %b %s ... " "${INFO}" "Stopping qlauncher"
 			systemctl stop qlauncher || error "Failed to stop qlauncher"
 			${PRIN} "%b\\n" "${DONE}"
-		elif [[ "$(systemctl is-active qlauncher)" == *"inactive"* ]] ; then
+		else
 			${SLP}
 			${PRIN} "%b\\n" "${TICK}"
 			${PRIN} " %b %s " "${INFO}" "Qlauncher isn't running"
@@ -96,15 +96,18 @@ stop() {
 
 restart() {
 	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
-		if [[ "$(systemctl is-active qlauncher)" == *"active"* ]] ; then
+		if [[ "$(systemctl is-active qlauncher)" == "active" ]] ; then
 			${SLP}
 			${PRIN} "%b\\n" "${TICK}"
 			${PRIN} " %b %s ... " "${INFO}" "Restarting qlauncher"
 			systemctl restart qlauncher || error "Failed to restart qlauncher"
 			${PRIN} "%b\\n" "${DONE}"
-		elif [[ ! ${ql_RUNNING} ]] ; then
-			start
-		fi
+		else
+			${SLP}
+			${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s ... " "${INFO}" "Starting qlauncher"
+			systemctl start qlauncher || error "Failed to start qlauncher"
+			${PRIN} "%b\\n" "${DONE}"
 }
 
 check() {
