@@ -14,8 +14,6 @@ export SLP="sleep 0.69s"
 export dir_QR="/opt/.qlauncher-qr"
 export dir_ql="/usr/bin/ql"
 export ql="/opt/qlauncherV2/qlauncher.sh"
-export ql_RUNNING="${ql} check | grep '"edgecore_alive":"true"'"
-export ql_STOPPED="${ql} check | grep '"edgecore_alive":""'"
 export repo_QL="https://get.qlauncher.poseidon.network/install.sh"
 
 error() {
@@ -62,7 +60,7 @@ ql_instd() {
 
 start() {
 	${PRIN} " %b %s ... " "${INFO}" "Detect qlauncher status"
-		if [[ "$(systemctl is-active qlauncher)" == *"failed"* ]] ; then
+		if [[ "$(systemctl is-active qlauncher)" == *"inactive"* ]] ; then
 			${SLP}
 			${PRIN} "%b\\n" "${TICK}"
 			${PRIN} " %b %s ... " "${INFO}" "Starting qlauncher"
