@@ -108,6 +108,7 @@ restart() {
 			${PRIN} " %b %s ... " "${INFO}" "Starting qlauncher"
 			systemctl start qlauncher || error "Failed to start qlauncher"
 			${PRIN} "%b\\n" "${DONE}"
+		fi
 }
 
 check() {
@@ -117,7 +118,7 @@ check() {
 			${ql} check | cut -c ${z}
 		done
 	${ECMD}
-    }
+}
 
 status() {
 	${ECMD}
