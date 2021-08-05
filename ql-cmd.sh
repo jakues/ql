@@ -84,7 +84,7 @@ stop() {
 			${PRIN} " %b %s ... " "${INFO}" "Stopping qlauncher"
 			systemctl stop qlauncher || error "Failed to stop qlauncher"
 			${PRIN} "%b\\n" "${DONE}"
-		else
+		elif [[ "$(systemctl is-active qlauncher)" == *"inactive"* ]] ; then
 			${SLP}
 			${PRIN} "%b\\n" "${TICK}"
 			${PRIN} " %b %s " "${INFO}" "Qlauncher isn't running"
@@ -339,7 +339,7 @@ case "$1" in
 		soedo ; inet ; ql_instd ; pull
 ;;
 	--update)
-		soedo ; inet ; ql_instd ; update
+		update
 ;;
 	--hostname)
 		soedo ; hostname
