@@ -13,7 +13,9 @@ export DONE="${COL_LIGHT_GREEN} done !${CR}"
 export SLP="sleep 0.69s"
 export dir_QR="/opt/.qlauncher-qr"
 export dir_ql="/usr/bin/ql"
-export ql="/opt/qlauncherV2/qlauncher.sh"
+export main_dir="/opt/qlauncherV2"
+export ql="${main_dir}/qlauncher.sh"
+export drive_qlv2=/mnt/qlv2
 export repo_QL="https://get.qlauncher.poseidon.network/install.sh"
 
 error() {
@@ -105,6 +107,7 @@ restart() {
 		else
 			${SLP}
 			${PRIN} "%b\\n" "${TICK}"
+			${PRIN} " %b %s " "${INFO}" "Qlauncher isn't running"
 			${PRIN} " %b %s ... " "${INFO}" "Starting qlauncher"
 			systemctl start qlauncher || error "Failed to start qlauncher"
 			${PRIN} "%b\\n" "${DONE}"
@@ -156,7 +159,7 @@ log() {
 }
 
 inst() {
-	if [ -d /opt/qlauncherV2 ]; then
+	if [ -d ${main_dir} ]; then
 		error "Qlauncher already installed !"
 	else
         ${PRIN} " %b %s\n" "${INFO}" "Qlauncher not installed !"
@@ -170,16 +173,22 @@ inst() {
 }
 
 unst() {
-	if [ -d /opt/qlauncherV2 ]; then
+	if [ -d ${main_dir} ]; then
 		read -p " [?] Are you want to uninstall qlauncher ? [y/N]" -n 1 -r
 			if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
 				${ECMD}
 				error "Operation canceled !"
 			else
 				${ECMD}
+				# Stop ql
 				stop
 				${PRIN} " %b %s ... \n" "${INFO}" "Uninstalling qlauncher"
 				${ql} uninstall || error "Failed to uninstall qlauncher !"
+				# Remove dir ql
+				${PRIN} " %b %s ... " "${INFO}" "Remove qlauncher dir"
+				rm -rf ${main_dir} || error "Failed to remove qlauncher directory"
+				rm -rf ${drive_qlv2} || error "Failed to remove qlauncher directory"
+				${PRIN} "%b\\n" "${TICK}"
 				${PRIN} " %b %s " "${INFO}" "Uninstall qlauncher"
 				${PRIN} "%b" "${DONE}"
 				${SLP}
@@ -191,9 +200,9 @@ unst() {
 }
 
 reinst() {
-	if [ -d /opt/qlauncherV2 ]; then
+	if [ -d ${main_dir} ]; then
 		# Stop ql
-		stop
+		# stop
 		# Uninstall ql
 		${PRIN} " %b %s ... \n" "${INFO}" "Uninstalling qlauncher"
 		${ql} uninstall || error "Failed to uninstall qlauncher !"
@@ -203,7 +212,8 @@ reinst() {
 		${PRIN} " %b\\n" "${TICK}"
 		# Remove dir ql
 		${PRIN} " %b %s ... " "${INFO}" "Remove qlauncher dir"
-		rm -rf /opt/qlauncherV2 || error "Failed to remove qlauncher directory"
+		rm -rf ${main_dir} || error "Failed to remove qlauncher directory"
+		rm -rf ${drive_qlv2} || error "Failed to remove qlauncher directory"
 		${PRIN} "%b\\n" "${TICK}"
 		# Install ql again
 		${PRIN} " %b %s ... \n" "${INFO}" "Installing qlauncher"
