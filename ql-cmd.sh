@@ -115,11 +115,18 @@ restart() {
 }
 
 check() {
-	export ql_check="2-26 28-68 90-114 116-136 138-160 162-183 185-205"
+	export dir_INFO="/opt/.qlauncher-info"
+	${ql} check > ${dir_INFO}
+	sed -i 's/{//g' ${dir_INFO}
+	sed -i 's/}//g' ${dir_INFO}
+	sed -i 's/,/\n/g' ${dir_INFO}
+	sed -i 's/"//g' ${dir_INFO}
+	sed -i 's/:/	: /g' ${dir_INFO}
+	sed -i 's/_/ /g' ${dir_INFO}
+	sed -i 's/hwsn/qlauncher id/g' ${dir_INFO}
+	sed -i 's/env/environment/g' ${dir_INFO}
 	${ECMD}
-		for z in ${ql_check} ; do
-			${ql} check | cut -c ${z}
-		done
+		cat ${dir_INFO}
 	${ECMD}
 }
 
